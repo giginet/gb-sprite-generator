@@ -1,0 +1,8 @@
+[package]
+name = "gb_image_converter"
+version = "0.1.0"
+authors = ["giginet <giginet.net@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+image = "*"
