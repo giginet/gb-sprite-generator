@@ -7,6 +7,17 @@ enum Pixel {
     Black, Gray, LightGray, White,
 }
 
+impl Pixel {
+    fn to_binary(&self) -> u8 {
+        return match self {
+            Pixel::White => 0b00,
+            Pixel::LightGray => 0b01,
+            Pixel::Gray => 0b10,
+            Pixel::Black => 0b11,
+        }
+    }
+}
+
 impl fmt::Display for Pixel {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -18,10 +29,22 @@ impl fmt::Display for Pixel {
     }
 }
 
+struct SourceGenerator {
+}
+
+impl SourceGenerator {
+    fn generate(pixels: Vec<Pixel>) -> String {
+        let joined = pixels
+            .into_iter()
+            .map(|pixel| pixel.to_binary().to_string())
+            .collect::<Vec<String>>()
+            .join(", ");
+        return format!("unsigned char sprites[] = {{{}}};", joined);
+    }
+}
+
 fn convert_to_pixel(data: [u8; 3]) -> Pixel {
-    let r = data[0];
-    let g = data[1];
-    let b = data[2];
+    let [r, g, b] = data;
     let c = (r as u32) << 0 | (g as u32) << 8 | (b as u32) << 16;
     return match c {
         0x000000 => Pixel::Black,
@@ -48,8 +71,10 @@ fn main() {
     let img = image::open(&img_path).unwrap();
     let img = img.to_rgb();
 
-    for p in img.pixels() {
-        let pixel = convert_to_pixel(p.data);
-        // println!("{}", pixel);
-    }
+    let converted = img.pixels()
+        .map(|p| convert_to_pixel(p.data))
+        .collect::<Vec<Pixel>>();
+    let generator = SourceGenerator { };
+    let header = SourceGenerator::generate(converted);
+    println!("{}", header);
 }
