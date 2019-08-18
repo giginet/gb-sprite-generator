@@ -1,4 +1,4 @@
-# retro-weaver
+# gb-sprite-generator
 
 Convert modern images to a matrix for GBDK.
 
