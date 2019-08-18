@@ -29,14 +29,13 @@ impl fmt::Display for Pixel {
     }
 }
 
-struct SourceGenerator {
-}
+struct SourceGenerator { }
 
 impl SourceGenerator {
-    fn generate(pixels: Vec<Pixel>) -> String {
-        let joined = pixels
+    fn generate(&self, squashed: Vec<u8>) -> String {
+        let joined = squashed
             .into_iter()
-            .map(|pixel| pixel.to_binary().to_string())
+            .map(|value| value.to_string())
             .collect::<Vec<String>>()
             .join(", ");
         return format!("unsigned char sprites[] = {{{}}};", joined);
@@ -53,6 +52,20 @@ fn convert_to_pixel(data: [u8; 3]) -> Pixel {
         0xFFFFFF => Pixel::White,
         _ => panic!("Unexpected pixel {}", c)
     };
+}
+
+fn squash(chunk: &[Pixel]) -> [u8; 2] {
+    fn clamp(i: u8) -> u8 {
+        if i > 0 {
+            return 1;
+        }
+        return 0;
+    }
+    let first_bytes = chunk.iter().map(|p| clamp(p.to_binary() & 0b01) );
+    let second_bytes = chunk.iter().map(|p| clamp(p.to_binary() & 0b10) );
+    let first_squashed = first_bytes.fold(0, |a, b| a << 1 | b);
+    let second_squashed = second_bytes.fold(0, |a, b| a << 1 | b);
+    return [first_squashed, second_squashed];
 }
 
 fn main() {
@@ -74,7 +87,17 @@ fn main() {
     let converted = img.pixels()
         .map(|p| convert_to_pixel(p.data))
         .collect::<Vec<Pixel>>();
+    let length = converted.len();
+    let mut generated: Vec<u8> = Vec::new();
+    // TODO padding
+    for i in 0..length/8 {
+        let start = i * 8;
+        let end = (i + 1) * 8;
+        let chunk: &[Pixel] = &converted[start..end];
+        let squashed = squash(chunk).to_vec();
+        generated = [generated, squashed].concat();
+    }
     let generator = SourceGenerator { };
-    let header = SourceGenerator::generate(converted);
+    let header = generator.generate(generated);
     println!("{}", header);
 }
