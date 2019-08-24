@@ -1,7 +1,13 @@
 extern crate image;
+mod chopper;
 
 use std::env;
 use std::fmt;
+
+struct Size {
+    let width: u32;
+    let height: u32;
+}
 
 enum Pixel {
     Black, Gray, LightGray, White,
