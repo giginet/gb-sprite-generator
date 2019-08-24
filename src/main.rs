@@ -4,11 +4,6 @@ mod chopper;
 use std::env;
 use std::fmt;
 
-struct Size {
-    let width: u32;
-    let height: u32;
-}
-
 enum Pixel {
     Black, Gray, LightGray, White,
 }
@@ -48,8 +43,8 @@ impl SourceGenerator {
     }
 }
 
-fn convert_to_pixel(data: [u8; 3]) -> Pixel {
-    let [r, g, b] = data;
+fn convert_to_pixel(data: [u8; 4]) -> Pixel {
+    let [r, g, b, _] = data;
     let c = (r as u32) << 0 | (g as u32) << 8 | (b as u32) << 16;
     return match c {
         0x000000 => Pixel::Black,
@@ -86,24 +81,29 @@ fn main() {
         Some(s) => s
     };
     println!("Converting {}...", img_path);
+    
+    let chopper = chopper::Chopper { };
 
-    let img = image::open(&img_path).unwrap();
-    let img = img.to_rgb();
+    let mut img = image::open(&img_path).unwrap();
+    let chopped = chopper.chop(&mut img);
+    for sub_image in chopped {
+        let img = sub_image.to_image();
 
-    let converted = img.pixels()
-        .map(|p| convert_to_pixel(p.data))
-        .collect::<Vec<Pixel>>();
-    let length = converted.len();
-    let mut generated: Vec<u8> = Vec::new();
-    // TODO padding
-    for i in 0..length/8 {
-        let start = i * 8;
-        let end = (i + 1) * 8;
-        let chunk: &[Pixel] = &converted[start..end];
-        let squashed = squash(chunk).to_vec();
-        generated = [generated, squashed].concat();
+        let converted = img.pixels()
+            .map(|p| convert_to_pixel(p.data))
+            .collect::<Vec<Pixel>>();
+        let length = converted.len();
+        let mut generated: Vec<u8> = Vec::new();
+        // TODO padding
+        for i in 0..length/8 {
+            let start = i * 8;
+            let end = (i + 1) * 8;
+            let chunk: &[Pixel] = &converted[start..end];
+            let squashed = squash(chunk).to_vec();
+            generated = [generated, squashed].concat();
+        }
+        let generator = SourceGenerator { };
+        let header = generator.generate(generated);
+        println!("{}", header);
     }
-    let generator = SourceGenerator { };
-    let header = generator.generate(generated);
-    println!("{}", header);
 }
