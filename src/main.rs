@@ -1,5 +1,8 @@
 extern crate image;
-mod chopper;
+use image::{RgbaImage, Rgba, ImageBuffer};
+pub mod chopper;
+pub mod pixel_container;
+use pixel_container::RgbaPixelContainer;
 
 use std::env;
 use std::fmt;
@@ -31,6 +34,24 @@ impl fmt::Display for Pixel {
 }
 
 struct SourceGenerator { }
+
+fn load_pixels(image: RgbaImage) -> RgbaPixelContainer {
+    let mut pixels = Vec::new();
+    let width = image.width();
+    let height = image.height();
+    let original_pixels = image.into_raw();
+    for x in 0..width {
+        let mut horizontal_pixels = Vec::new();
+        for y in 0..height {
+            let index = (x + y * width) as usize;
+            let pixel = original_pixels[index];
+            pixel
+            horizontal_pixels.push(pixel);
+            pixels.push(horizontal_pixels); 
+        }
+    }
+    return RgbaPixelContainer { pixels: pixels }
+}
 
 impl SourceGenerator {
     fn generate(&self, squashed: Vec<u8>) -> String {
@@ -84,10 +105,14 @@ fn main() {
     
     let chopper = chopper::Chopper { };
 
+    // TODO
     let mut loaded_image = image::open(&img_path).unwrap().to_rgba();
-    let chopped = chopper.chop(&mut loaded_image);
-    for sub_image in chopped {
-        let img = sub_image.to_image();
+    let width = loaded_image.width() as u8;
+    let height = loaded_image.height() as u8;
+    let container = load_pixels(loaded_image);
+    let chopped = chopper.chop(width, height, &container);
+    for sub_pixels in chopped {
+        let img: RgbaImage = RgbaImage::from_vec(8, 8, sub_pixels).unwrap();
         let converted = img.pixels()
             .map(|p| convert_to_pixel(p.data))
             .collect::<Vec<Pixel>>();
