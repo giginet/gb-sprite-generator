@@ -84,11 +84,10 @@ fn main() {
     
     let chopper = chopper::Chopper { };
 
-    let mut img = image::open(&img_path).unwrap();
-    let chopped = chopper.chop(&mut img);
+    let mut loaded_image = image::open(&img_path).unwrap().to_rgba();
+    let chopped = chopper.chop(&mut loaded_image);
     for sub_image in chopped {
         let img = sub_image.to_image();
-
         let converted = img.pixels()
             .map(|p| convert_to_pixel(p.data))
             .collect::<Vec<Pixel>>();
