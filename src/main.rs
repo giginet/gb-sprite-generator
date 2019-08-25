@@ -9,17 +9,16 @@ use std::env;
 struct SourceGenerator { }
 
 fn load_sprite(image: &RgbaImage) -> Sprite {
-    let mut pixels = Vec::new();
     let width = image.width();
     let height = image.height();
-    for x in 0..width {
-        let horizontal_pixels = (0..height).map( |y| {
+    let pixels = (0..width).map( |x| {
+        return (0..height).map( |y| {
             let raw_pixel = image.get_pixel(x, y);
             return Pixel::from_raw(raw_pixel.data);
         })
         .collect::<Vec<Pixel>>();
-        pixels.push(horizontal_pixels); 
-    }
+    })
+    .collect::<Vec<Vec<Pixel>>>();
     return Sprite { pixels: pixels };
 }
 
