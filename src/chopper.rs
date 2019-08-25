@@ -26,7 +26,6 @@ impl Chopper {
                     println!("x = {}", x);
                 }
                 let new_sprite = Sprite { pixels: new_pixels.to_vec() };
-                println!("length = {}", new_pixels.len());
                 sprites.push(new_sprite);
             }
         }

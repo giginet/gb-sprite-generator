@@ -69,8 +69,8 @@ fn main() {
     for sprite in chopped {
         let length = (sprite.width() * sprite.height()) as u32;
         let mut converted = Vec::new();
-        for x in 0..sprite.width() {
-            for y in 0..sprite.height() {
+        for y in 0..sprite.height() {
+            for x in 0..sprite.width() {
                 converted.push(&sprite.pixels[x as usize][y as usize]);
             }
         }
