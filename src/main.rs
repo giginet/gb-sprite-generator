@@ -12,6 +12,8 @@ use std::env;
 fn load_sprite(image: &RgbaImage) -> Sprite {
     let width = image.width();
     let height = image.height();
+
+    println!("loaded width = {}, height = {}", width, height);
     let pixels = (0..width).map( |x| {
         return (0..height).map( |y| {
             let raw_pixel = image.get_pixel(x, y);
@@ -56,6 +58,7 @@ fn main() {
     let loaded_image = image::open(&img_path).unwrap().to_rgba();
     let original_sprite = load_sprite(&loaded_image);
     let chopped = chopper.chop(&original_sprite);
+    let mut headers = Vec::new();
     for sprite in chopped {
         let length = (sprite.width() * sprite.height()) as u32;
         let mut converted = Vec::new();
@@ -73,8 +76,15 @@ fn main() {
             let squashed = squash(&chunk).to_vec();
             generated = [generated, squashed].concat();
         }
-        let generator = SourceGenerator { };
-        let header = generator.generate(generated);
-        println!("{}", header);
+        headers.push(generated);
     }
+    let mut all_headers: Vec<u8> = Vec::new();
+    // TODO fold
+    for h in headers {
+        all_headers = [all_headers, h].concat();
+    }
+    let generator = SourceGenerator { };
+    println!("length = {}", all_headers.len());
+    let header = generator.generate(all_headers, 0);
+    println!("{}", header);
 }
