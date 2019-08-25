@@ -3,6 +3,7 @@ use image::RgbaImage;
 pub mod chopper;
 pub mod sprite;
 pub mod source_generator;
+pub mod utils;
 use sprite::{Sprite, Pixel};
 use source_generator::SourceGenerator;
 
@@ -65,7 +66,6 @@ fn main() {
         }
 
         let mut generated: Vec<u8> = Vec::new();
-        // TODO padding
         for i in 0..length / 8 {
             let start = (i * 8) as usize;
             let end = ((i + 1) * 8) as usize;

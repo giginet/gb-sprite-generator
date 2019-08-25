@@ -1,16 +1,32 @@
 extern crate image;
-use crate::sprite::Sprite;
+use crate::sprite::{Sprite, Pixel};
+use crate::utils::next_multiple;
 
 pub struct Chopper { }
+
+fn pad_sprite(sprite: &Sprite) -> Sprite {
+    let wanted_horizontal_len = next_multiple(8, sprite.width()) as usize;
+    let wanted_vertical_len = next_multiple(8, sprite.height()) as usize; 
+    let mut new_pixels = sprite.pixels.clone();
+    let default = (0..wanted_vertical_len).map({ |_| Pixel::White }).collect();
+    new_pixels.resize(wanted_vertical_len, default);
+    for x in 0..sprite.width() {
+        let mut vertical = &mut new_pixels[x as usize];
+        vertical.resize(wanted_horizontal_len, Pixel::White);
+    }
+
+    return Sprite { pixels: new_pixels }
+}
 
 impl Chopper {
     pub fn chop<'me, 'generated>(
         &'me self, 
         sprite: &'generated Sprite) -> Vec<Sprite> { 
-        let pixels = &sprite.pixels;
-        // TODO image size must be 16x16
-        let vertical_count = sprite.height() / 8;
-        let horizontal_count = sprite.width() / 8;
+        let sprite = pad_sprite(&sprite);
+        let mut pixels = sprite.pixels.clone();
+        let vertical_count = (sprite.height() as f64 / 8.0).ceil() as u32;
+        let horizontal_count = (sprite.width() as f64 / 8.0).ceil() as u32;
+
         let mut sprites = Vec::new();
         for v in 0..horizontal_count {
             for h in 0..vertical_count {
