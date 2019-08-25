@@ -67,13 +67,14 @@ fn main() {
     let original_sprite = load_sprite(&loaded_image);
     let chopped = chopper.chop(&original_sprite);
     for sprite in chopped {
-        let length = sprite.width() * sprite.height() as u8;
+        let length = (sprite.width() * sprite.height()) as u32;
         let mut converted = Vec::new();
         for x in 0..sprite.width() {
             for y in 0..sprite.height() {
                 converted.push(&sprite.pixels[x as usize][y as usize]);
             }
         }
+
         let mut generated: Vec<u8> = Vec::new();
         // TODO padding
         for i in 0..length / 8 {
@@ -84,8 +85,6 @@ fn main() {
             generated = [generated, squashed].concat();
         }
         let generator = SourceGenerator { };
-        println!("sprite_size = {}x{}", sprite.width(), sprite.height());
-
         let header = generator.generate(generated);
         println!("{}", header);
     }

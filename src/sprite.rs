@@ -5,15 +5,16 @@ pub struct Sprite {
 }
 
 impl Sprite {
-    pub fn width(&self) -> u8 {
-        return self.pixels.len() as u8;
+    pub fn width(&self) -> u32 {
+        return self.pixels.len() as u32;
     }
 
-    pub fn height(&self) -> u8 {
-        return self.pixels[0].len() as u8;
+    pub fn height(&self) -> u32 {
+        return self.pixels[0].len() as u32;
     }
 }
 
+#[derive(Clone)]
 pub enum Pixel {
     Black, Gray, LightGray, White,
 }

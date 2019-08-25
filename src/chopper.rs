@@ -15,10 +15,18 @@ impl Chopper {
         let mut sprites = Vec::new();
         for v in 0..horizontal_count {
             for h in 0..vertical_count {
-                let x = h * 8;
-                let y = v * 8;
-                let new_pixel = Pixel::Black;
-                let new_sprite = Sprite { pixels: vec![vec![new_pixel]] };
+                let mut new_pixels = Vec::new();
+                for x in (h * 8)..(h + 1) * 8 {
+                    let mut new_vertical_pixels = Vec::new();
+                    for y in (v * 8)..(v + 1) * 8 {
+                        let pixel = pixels[x as usize][y as usize].clone();
+                        new_vertical_pixels.push(pixel);
+                    }
+                    new_pixels.push(new_vertical_pixels);
+                    println!("x = {}", x);
+                }
+                let new_sprite = Sprite { pixels: new_pixels.to_vec() };
+                println!("length = {}", new_pixels.len());
                 sprites.push(new_sprite);
             }
         }
