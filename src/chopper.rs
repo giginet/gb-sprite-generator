@@ -1,6 +1,5 @@
 extern crate image;
-use image::{GenericImageView, SubImage, imageops, RgbaImage, DynamicImage, Rgba};
-use crate::sprite::{Sprite, Pixel};
+use crate::sprite::Sprite;
 
 pub struct Chopper { }
 
@@ -23,7 +22,6 @@ impl Chopper {
                         new_vertical_pixels.push(pixel);
                     }
                     new_pixels.push(new_vertical_pixels);
-                    println!("x = {}", x);
                 }
                 let new_sprite = Sprite { pixels: new_pixels.to_vec() };
                 sprites.push(new_sprite);

@@ -1,12 +1,12 @@
 extern crate image;
-use image::{RgbaImage};
+use image::RgbaImage;
 pub mod chopper;
 pub mod sprite;
+pub mod source_generator;
 use sprite::{Sprite, Pixel};
+use source_generator::SourceGenerator;
 
 use std::env;
-
-struct SourceGenerator { }
 
 fn load_sprite(image: &RgbaImage) -> Sprite {
     let width = image.width();
@@ -20,17 +20,6 @@ fn load_sprite(image: &RgbaImage) -> Sprite {
     })
     .collect::<Vec<Vec<Pixel>>>();
     return Sprite { pixels: pixels };
-}
-
-impl SourceGenerator {
-    fn generate(&self, squashed: Vec<u8>) -> String {
-        let joined = squashed
-            .into_iter()
-            .map(|value| value.to_string())
-            .collect::<Vec<String>>()
-            .join(", ");
-        return format!("unsigned char sprites[] = {{{}}};", joined);
-    }
 }
 
 fn squash(chunk: &Vec<&Pixel>) -> [u8; 2] {
