@@ -1,56 +1,26 @@
 extern crate image;
-use image::{RgbaImage, Rgba, ImageBuffer};
+use image::{RgbaImage};
 pub mod chopper;
-pub mod pixel_container;
-use pixel_container::RgbaPixelContainer;
+pub mod sprite;
+use sprite::{Sprite, Pixel};
 
 use std::env;
-use std::fmt;
-
-enum Pixel {
-    Black, Gray, LightGray, White,
-}
-
-impl Pixel {
-    fn to_binary(&self) -> u8 {
-        return match self {
-            Pixel::White => 0b00,
-            Pixel::LightGray => 0b01,
-            Pixel::Gray => 0b10,
-            Pixel::Black => 0b11,
-        }
-    }
-}
-
-impl fmt::Display for Pixel {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Pixel::Black => write!(f, "Black"),
-            Pixel::Gray => write!(f, "Gray"),
-            Pixel::LightGray => write!(f, "LightGray"),
-            Pixel::White => write!(f, "White"),
-        }
-    }
-}
 
 struct SourceGenerator { }
 
-fn load_pixels(image: RgbaImage) -> RgbaPixelContainer {
+fn load_sprite(image: &RgbaImage) -> Sprite {
     let mut pixels = Vec::new();
     let width = image.width();
     let height = image.height();
-    let original_pixels = image.into_raw();
     for x in 0..width {
-        let mut horizontal_pixels = Vec::new();
-        for y in 0..height {
-            let index = (x + y * width) as usize;
-            let pixel = original_pixels[index];
-            pixel
-            horizontal_pixels.push(pixel);
-            pixels.push(horizontal_pixels); 
-        }
+        let horizontal_pixels = (0..height).map( |y| {
+            let raw_pixel = image.get_pixel(x, y);
+            return Pixel::from_raw(raw_pixel.data);
+        })
+        .collect::<Vec<Pixel>>();
+        pixels.push(horizontal_pixels); 
     }
-    return RgbaPixelContainer { pixels: pixels }
+    return Sprite { pixels: pixels };
 }
 
 impl SourceGenerator {
@@ -64,19 +34,7 @@ impl SourceGenerator {
     }
 }
 
-fn convert_to_pixel(data: [u8; 4]) -> Pixel {
-    let [r, g, b, _] = data;
-    let c = (r as u32) << 0 | (g as u32) << 8 | (b as u32) << 16;
-    return match c {
-        0x000000 => Pixel::Black,
-        0x555555 => Pixel::Gray,
-        0xAAAAAA => Pixel::LightGray,
-        0xFFFFFF => Pixel::White,
-        _ => panic!("Unexpected pixel {}", c)
-    };
-}
-
-fn squash(chunk: &[Pixel]) -> [u8; 2] {
+fn squash(chunk: &Vec<&Pixel>) -> [u8; 2] {
     fn clamp(i: u8) -> u8 {
         if i > 0 {
             return 1;
@@ -106,27 +64,29 @@ fn main() {
     let chopper = chopper::Chopper { };
 
     // TODO
-    let mut loaded_image = image::open(&img_path).unwrap().to_rgba();
-    let width = loaded_image.width() as u8;
-    let height = loaded_image.height() as u8;
-    let container = load_pixels(loaded_image);
-    let chopped = chopper.chop(width, height, &container);
-    for sub_pixels in chopped {
-        let img: RgbaImage = RgbaImage::from_vec(8, 8, sub_pixels).unwrap();
-        let converted = img.pixels()
-            .map(|p| convert_to_pixel(p.data))
-            .collect::<Vec<Pixel>>();
-        let length = converted.len();
+    let loaded_image = image::open(&img_path).unwrap().to_rgba();
+    let original_sprite = load_sprite(&loaded_image);
+    let chopped = chopper.chop(&original_sprite);
+    for sprite in chopped {
+        let length = sprite.width() * sprite.height() as u8;
+        let mut converted = Vec::new();
+        for x in 0..sprite.width() {
+            for y in 0..sprite.height() {
+                converted.push(&sprite.pixels[x as usize][y as usize]);
+            }
+        }
         let mut generated: Vec<u8> = Vec::new();
         // TODO padding
-        for i in 0..length/8 {
-            let start = i * 8;
-            let end = (i + 1) * 8;
-            let chunk: &[Pixel] = &converted[start..end];
-            let squashed = squash(chunk).to_vec();
+        for i in 0..length / 8 {
+            let start = (i * 8) as usize;
+            let end = ((i + 1) * 8) as usize;
+            let chunk = converted[start..end].to_vec();
+            let squashed = squash(&chunk).to_vec();
             generated = [generated, squashed].concat();
         }
         let generator = SourceGenerator { };
+        println!("sprite_size = {}x{}", sprite.width(), sprite.height());
+
         let header = generator.generate(generated);
         println!("{}", header);
     }
