@@ -13,7 +13,6 @@ fn load_sprite(image: &RgbaImage) -> Sprite {
     let width = image.width();
     let height = image.height();
 
-    println!("loaded width = {}, height = {}", width, height);
     let pixels = (0..width).map( |x| {
         return (0..height).map( |y| {
             let raw_pixel = image.get_pixel(x, y);
@@ -84,7 +83,6 @@ fn main() {
         all_headers = [all_headers, h].concat();
     }
     let generator = SourceGenerator { };
-    println!("length = {}", all_headers.len());
     let header = generator.generate(all_headers, 0);
     println!("{}", header);
 }
