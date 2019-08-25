@@ -11,7 +11,7 @@ fn pad_sprite(sprite: &Sprite) -> Sprite {
     let default = (0..wanted_vertical_len).map({ |_| Pixel::White }).collect();
     new_pixels.resize(wanted_vertical_len, default);
     for x in 0..sprite.width() {
-        let mut vertical = &mut new_pixels[x as usize];
+        let vertical = &mut new_pixels[x as usize];
         vertical.resize(wanted_horizontal_len, Pixel::White);
     }
 
@@ -23,7 +23,7 @@ impl Chopper {
         &'me self, 
         sprite: &'generated Sprite) -> Vec<Sprite> { 
         let sprite = pad_sprite(&sprite);
-        let mut pixels = sprite.pixels.clone();
+        let pixels = sprite.pixels.clone();
         let vertical_count = (sprite.height() as f64 / 8.0).ceil() as u32;
         let horizontal_count = (sprite.width() as f64 / 8.0).ceil() as u32;
 
