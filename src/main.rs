@@ -77,11 +77,9 @@ fn main() {
         }
         headers.push(generated);
     }
-    let mut all_headers: Vec<u8> = Vec::new();
-    // TODO fold
-    for h in headers {
-        all_headers = [all_headers, h].concat();
-    }
+    let all_headers = headers
+        .into_iter()
+        .fold(Vec::new(), { |c, e| [c, e].concat() });
     let generator = SourceGenerator { };
     let header = generator.generate(all_headers, 0);
     println!("{}", header);
