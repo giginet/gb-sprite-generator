@@ -38,12 +38,10 @@ impl Converter {
     pub fn load(&self, img_path: &String) -> vec::Vec<u8> {
         let chopper = Chopper { };
 
-        // TODO
         let loaded_image = image::open(img_path).unwrap().to_rgba();
         let original_sprite = load_sprite(&loaded_image);
         let chopped = chopper.chop(&original_sprite);
-        let mut headers = Vec::new();
-        for sprite in chopped {
+        let headers: Vec<Vec<u8>>  = chopped.into_iter().map( |sprite| {
             let length = (sprite.width() * sprite.height()) as u32;
             let mut converted = Vec::new();
             for y in 0..sprite.height() {
@@ -52,19 +50,20 @@ impl Converter {
                 }
             }
 
-            let mut generated: Vec<u8> = Vec::new();
-            for i in 0..length / 8 {
-                let start = (i * 8) as usize;
-                let end = ((i + 1) * 8) as usize;
+            return (0..length / 8).into_iter().enumerate().flat_map( |t| {
+                let start = (t.0 * 8) as usize;
+                let end = ((t.0 + 1) * 8) as usize;
                 let chunk = converted[start..end].to_vec();
                 let squashed = squash(&chunk).to_vec();
-                generated = [generated, squashed].concat();
-            }
-            headers.push(generated);
-        }
+                return squashed;
+            })
+            .collect();
+        })
+        .collect();
         let all_headers = headers
             .into_iter()
-            .fold(Vec::new(), { |c, e| [c, e].concat() });
+            .flat_map( |e| { e })
+            .collect();
         return all_headers;
     }
 }
