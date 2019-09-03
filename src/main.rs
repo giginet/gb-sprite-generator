@@ -6,6 +6,7 @@ pub mod source_generator;
 pub mod utils;
 use sprite::{Sprite, Pixel};
 use source_generator::SourceGenerator;
+use std::path;
 
 use std::env;
 
@@ -80,7 +81,10 @@ fn main() {
     let all_headers = headers
         .into_iter()
         .fold(Vec::new(), { |c, e| [c, e].concat() });
+
+    let path = path::Path::new(&img_path);
+    let variable_name = path.file_stem().unwrap();
     let generator = SourceGenerator { };
-    let header = generator.generate(all_headers, 0);
+    let header = generator.generate(all_headers, &variable_name.to_str().unwrap());
     println!("{}", header);
 }
