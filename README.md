@@ -4,5 +4,5 @@
 Convert modern images to a matrix for GBDK.
 
 ```console
-$ cargo run assets/giginyan.png
+$ cargo run assets >1 pixels.h
 ```

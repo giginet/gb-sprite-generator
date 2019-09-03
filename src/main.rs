@@ -30,7 +30,7 @@ fn main() {
         .filter({ |path| path.ends_with(".png") });
 
     for image_name in images {
-        println!("Converting {}...", image_name);
+        eprintln!("Converting {}...", image_name);
 
         let converter = Converter { };
         let img_path = base_dir.join(image_name);
