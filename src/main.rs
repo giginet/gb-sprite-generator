@@ -26,7 +26,7 @@ fn main() {
     let base_dir = path::Path::new(&dir_path);
     let entries = fs::read_dir(&dir_path).unwrap();
     let images = entries
-        .map({ |entry| entry.ok().unwrap().file_name().into_string().ok().unwrap() } )
+        .map({ |entry| entry.unwrap().file_name().into_string().unwrap() })
         .filter({ |path| path.ends_with(".png") });
 
     for image_name in images {
