@@ -12,7 +12,7 @@ pub fn padded<T: Clone>(vec: &Vec<T>, len: usize, default_value: T) -> Vec<T> {
 }
 
 pub fn next_multiple(multiple_of: u32, number: u32) -> u32 {
-    let division = (number as f64 / multiple_of as f64);
+    let division = number as f64 / multiple_of as f64;
     if division != division.trunc() {
         let target = division.ceil();
         return multiple_of * target as u32;
